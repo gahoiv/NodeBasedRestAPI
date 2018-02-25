@@ -13,3 +13,9 @@
     * Run following command: **node DummyDataInsert.js**
       This will insert 27000 dummy data in local mongo DB.
 * Run node **node server.js**
+
+## API exposed: 
+* http://localhost:8080/ExecutionInfo.json : Gives the last execution result
+* http://localhost:8080/topFeatures?number=6&executionResult=Skip
+* http://localhost:8080/topTestCases?number=6&executionResult=Skip(
+**Note:** executionResult acceptable values: Pass, Fail, Skip. Default is Pass. Cross-Origin supported
