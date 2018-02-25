@@ -17,5 +17,5 @@
 ## API exposed: 
 * http://localhost:8080/ExecutionInfo.json : Gives the last execution result
 * http://localhost:8080/topFeatures?number=6&executionResult=Skip
-* http://localhost:8080/topTestCases?number=6&executionResult=Skip(
-**Note:** executionResult acceptable values: Pass, Fail, Skip. Default is Pass. Cross-Origin supported
+* http://localhost:8080/topTestCases?number=6&executionResult=Skip
+* **Note:** executionResult acceptable values: Pass, Fail, Skip. Default is Pass. Cross-Origin supported
