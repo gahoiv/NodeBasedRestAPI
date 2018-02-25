@@ -53,7 +53,7 @@ var initials = {
     
     };
 
-    var testcaseStatus = ["Pass", "Fail", "Ignore"];
+    var testcaseStatus = ["Pass", "Fail", "Skip"];
 
 
     function getDummyObject()
@@ -67,17 +67,19 @@ var initials = {
         return obj;
     }
 
-    function populateMongoDBCollection(collection)
+    function populateMongoDBCollection(collection, client, sessionIDIndex, sessionStartTimeIndex, buildStartTime)
     {
-        console.log("Please wait while inserting 27000 documents in MongoDB....");
+        
         var count = 1;
-        for(var featureID = 1; featureID <= 30; featureID++)
+        var bulk = [];
+        for(var featureID = 1; featureID <= 6; featureID++)
         {
             for(var suiteID = 1; suiteID <= 30; suiteID++)
             {
                 for(var testcaseID = 1; testcaseID <= 30; testcaseID++)
                 {
                     var obj = getDummyObject();
+                    obj['sessionId'] = obj['sessionId']+sessionIDIndex;
                     obj['featureName'] = obj['featureName']+featureID;
                     obj['suiteName'] = obj['suiteName']+suiteID;
                     obj['testCaseId'] = obj['testCaseId']+testcaseID;
@@ -85,13 +87,30 @@ var initials = {
 
                     var rndm = Math.floor( (Math.random()*3 ) + 1 );
                     obj['testStatus'] = testcaseStatus[rndm - 1];
-                    collection.insert(obj, function(err, count){});
+
+                    var sessionStartTime = buildStartTime + (60*60*1000)*sessionStartTimeIndex;
+                    var sessionEndTime = sessionStartTime + (10*60*1000);
+                    obj['sessionStartTime'] = sessionStartTime;
+                    obj['sessionEndTime'] = sessionEndTime;
+
+                    bulk.push(obj);
+                    
                 }
             }
             
         }
+        collection.insert(bulk,{w:1, keepGoing:true}, function(err, count){
+
+                        if(sessionIDIndex > 5) {
+                            client.close();
+                        }else {
+                            populateMongoDBCollection(collection, client, sessionIDIndex+1, sessionStartTimeIndex+2, buildStartTime);
+                        }
+        });
         
     }
+    
+
     'use strict';
     var config = require("./config");
 
@@ -99,7 +118,7 @@ var initials = {
     var mongoURL = config.mongoDBInitial+config.mongodbHOST+':'+config.mongodbPORT;
     function insertIntoDB()
     {
-        
+        console.log("Please wait while inserting 32400 documents in MongoDB....");
         MongoClient.connect(mongoURL,function(err, client) {
             if(err != null)
             {
@@ -109,10 +128,10 @@ var initials = {
             var db = client.db(config.mongoDBName);
             var collection = db.collection(config.mongoCollectionName);
 
+            var yesterdayTime = (new Date().getTime()) - (24*60*60*1000);
+            populateMongoDBCollection(collection, client, 1, 1, yesterdayTime);
 
-            populateMongoDBCollection(collection);
-
-            client.close();
+            
 
         });
     }

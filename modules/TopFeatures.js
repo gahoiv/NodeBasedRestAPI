@@ -4,17 +4,21 @@ var config = require("../config");
 var MongoClient = require('mongodb').MongoClient;
 var mongoURL = config.mongoDBInitial+config.mongodbHOST+':'+config.mongodbPORT;
 
-function getTopFeaturs(request, response, top)
+function getTopFeaturs(request, response, top, executionResult)
 {
     if(top == null)
     {
         top = 5;
     }
+    if(executionResult == null || (executionResult != "Pass" && executionResult != "Fail" && executionResult != "Skip"))
+    {
+        executionResult = "Pass";
+    }
     MongoClient.connect(mongoURL,function(err, client) {
     
         var db = client.db(config.mongoDBName);
         var collection = db.collection(config.mongoCollectionName);
-        collection.group(['count', 'featureName'], {'testStatus':"Pass"}, {"count":1}, "function (obj, prev) { prev.count++; }", function(err, results) {
+        collection.group(['count', 'featureName'], {'testStatus':executionResult}, {"count":1}, "function (obj, prev) { prev.count++; }", function(err, results) {
         
             results.sort(compareDESC);
             var accu =[];
@@ -45,14 +49,19 @@ function collectTotalTestcaseData(collection,results, index, max, accu, response
 {
     accu[index]={};
     accu[index]["Feature Name"] = results[index]["featureName"];
-    accu[index]["Total Passed"] = results[index]["count"];
     collection.count({"featureName": results[index]["featureName"]}, function(err, count){
         accu[index]["Total Test Cases"] = count;
-        collectFailTestcaseData(collection,results, index, max, accu, response, client);
+        collectPassTestcaseData(collection,results, index, max, accu, response, client);
     });
 }
 
-
+function collectPassTestcaseData(collection,results, index, max, accu, response, client)
+{
+    collection.count({"featureName": results[index]["featureName"], 'testStatus':"Pass"}, function(err, count){
+        accu[index]["Total Passed"] = count;
+        collectFailTestcaseData(collection,results, index, max, accu, response, client);
+    });
+}
 
 function collectFailTestcaseData(collection,results, index, max, accu, response, client)
 {
@@ -64,7 +73,7 @@ function collectFailTestcaseData(collection,results, index, max, accu, response,
 
 function collectIgnoreTestcaseData(collection,results, index, max, accu, response, client)
 {
-    collection.count({"featureName": results[index]["featureName"], 'testStatus':"Ignore"}, function(err, count){
+    collection.count({"featureName": results[index]["featureName"], 'testStatus':"Skip"}, function(err, count){
         accu[index]["Total Skipped"] = count;
         if(index < max-1){
             collectTotalTestcaseData(collection,results, index+1, max, accu, response, client);

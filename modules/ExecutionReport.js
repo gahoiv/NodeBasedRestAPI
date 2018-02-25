@@ -14,28 +14,35 @@ function executionReport(request, response)
             
         var db = client.db(config.mongoDBName);
         var collection = db.collection(config.mongoCollectionName);
+
+        collection.find().sort({sessionEndTime: -1}).limit(1);
+        var options = { "sort": [['sessionEndTime',-1]] };
+        collection.findOne({}, options , function(err, doc) {
+            var lastSessionEndTime = doc.sessionEndTime;
+            totalTestCaseFind(lastSessionEndTime);
+        }); 
         
-        var totalTestCaseFind = function(){
-            collection.count(function(err, count){
+        var totalTestCaseFind = function(lastSessionEndTime){
+            collection.count({"sessionEndTime":lastSessionEndTime},function(err, count){
                 if(err == null)
                 {
                     resultObj["Total Test Cases"]= count;
                 }else {
                     resultObj["Total Test Cases"]= 0;
                 }
-                totalPassFind();
+                totalPassFind(lastSessionEndTime);
             });
         };
 
-        var totalPassFind = function (){
-            collection.count({"testStatus":"Pass"}, function(err, count){
+        var totalPassFind = function (lastSessionEndTime){
+            collection.count({"sessionEndTime":lastSessionEndTime, "testStatus":"Pass"}, function(err, count){
                 if(err == null)
                 {
                     resultObj["Total Passed"]= count;
                 }else {
                     resultObj["Total Passed"]= 0;
                 }
-                totalFailFind();
+                totalFailFind(lastSessionEndTime);
             });
 
             
@@ -43,21 +50,21 @@ function executionReport(request, response)
 
         
         
-        var totalFailFind = function(){
-            collection.count({"testStatus":"Fail"}, function(err, count){
+        var totalFailFind = function(lastSessionEndTime){
+            collection.count({"sessionEndTime":lastSessionEndTime,"testStatus":"Fail"}, function(err, count){
                 if(err == null)
                 {
                     resultObj["Total Failed"]= count;
                 }else {
                     resultObj["Total Failed"]= 0;
                 }
-                totalSkippedFind();
+                totalSkippedFind(lastSessionEndTime);
             });
             
         };
         
-        var totalSkippedFind = function() {
-            collection.count({"testStatus":"Ignore"}, function(err, count){
+        var totalSkippedFind = function(lastSessionEndTime) {
+            collection.count({"sessionEndTime":lastSessionEndTime,"testStatus":"Skip"}, function(err, count){
                 if(err == null)
                 {
                     resultObj["Total Skipped"]= count;
@@ -84,7 +91,7 @@ function executionReport(request, response)
             
         };
 
-        totalTestCaseFind();
+        
       
 
         });
