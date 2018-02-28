@@ -20,9 +20,18 @@ function getTopFeaturs(request, response, top, executionResult)
         var collection = db.collection(config.mongoCollectionName);
         collection.group(['count', 'featureName'], {'testStatus':executionResult}, {"count":1}, "function (obj, prev) { prev.count++; }", function(err, results) {
         
+            if(!results || results.length <= 0)
+            {
+                response.writeHead(204,{"content-type":"text/xml"});
+                response.write("No-Content");
+                client.close();
+                response.end();
+                return;
+            }
             results.sort(compareDESC);
+            var topResultNumber = (top <= results.length? top : results.length);
             var accu =[];
-            collectTotalTestcaseData(collection,results, 0, top, accu, response, client);
+            collectTotalTestcaseData(collection,results, 0, topResultNumber, accu, response, client);
             
             
         });

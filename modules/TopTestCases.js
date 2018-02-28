@@ -19,8 +19,17 @@ function getTopTestcases(request, response, top, executionResult) {
 
         collection.group(['count', 'testCaseId'], {'testStatus':executionResult}, {"count":1}, "function (obj, prev) { prev.count++; }", function(err, results) {
             
-            results.sort(compareDESC);
+            if(!results || results.length <= 0)
+            {
+                response.writeHead(204,{"content-type":"text/xml"});
+                response.write("No-Content");
+                client.close();
+                response.end();
+                return;
+            }
 
+            results.sort(compareDESC);
+            var topResultNumber = (top <= results.length? top : results.length);
             var accu = [];
             populateTestCaseName(collection, results, 0, top, accu, response, client);
             
