@@ -1,0 +1,18 @@
+{
+  "name": "nodebasedrestapi",
+  "private": true,
+  "version": "1.0.1",
+  "license": "GNU3",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.2",
+    "mongodb": "^3.0.3",
+    "multer": "^1.3.0"
+  },
+  "scripts": {
+    "update-deps": "npm update",
+    "prestart": "npm install",
+    "start": "node server.js"
+  }
+}

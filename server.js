@@ -2,6 +2,7 @@ var config = require("./config");
 var executionReport = require("./modules/ExecutionReport");
 var topFeatures = require("./modules/TopFeatures");
 var topTestcases = require("./modules/TopTestCases");
+var topRunningTimeTestCases = require("./modules/TopRunningTime");
 
 var express = require('express');
 var app = express();
@@ -20,31 +21,72 @@ app.get('/', function (req, res) {
 });
 
 app.get('/ExecutionInfo*', function (req, res) {
-    
-    executionReport.getExecutionReport(req, res);
+    try{
+        executionReport.getExecutionReport(req, res);
+    } catch(e){
+        handleServerError(req, res);
+    }
 });
 
 app.get('/topFeatures', function (req, res) {
     
     var number = req.query.number;
     var executionResult = req.query.executionResult;
-    
-    topFeatures.getTopFeaturs(req, res, number, executionResult);
+    try{
+        topFeatures.getTopFeaturs(req, res, number, executionResult);
+    } catch(e){
+    handleServerError(req, res);
+}
 });
 
+/*
+* Returns the top test cases.
+* Top test cases will be decided based on the user specified values of following argument.
+* number : Integer - Number of test cases that user expects to see. Default is 5.
+
+* executionTime: String [accepted values : < min | max > ] - If user specifies this argument with
+* request parameter, this API will return test cases based on their running time. If executionTime
+* value is "min" then top minimum time taking test cases will be returned and if value is "max" then
+* maximum time taking tast cases will be returned.
+* If user provides this argument but value is illegal or unacceptable, then it will send top minimum 
+* time taking test cases.
+
+* executionResult : String [Accepted values < Pass | Fail | Skip> . Default: Pass] - Return the top
+* test cases which has maximum number of result specified by user. For an example, if user specifies "Fail"
+* as value of this parameter, then it will return top test cases which has maximum number of fail count.
+*/
 app.get('/topTestCases', function (req, res) {
     
     var number = req.query.number;
+    var executionTimeSortOrder = req.query.executionTime;
     var executionResult = req.query.executionResult;
-    
-    topTestcases.getTopTestcases(req, res, number, executionResult);
+    try{
+        if(executionTimeSortOrder)
+        {
+            
+            new topRunningTimeTestCases.topTestsRunningTime(req, res, number,executionTimeSortOrder);
+            
+        }else {
+            topTestcases.getTopTestcases(req, res, number, executionResult);
+        }
+    } catch(e){
+        handleServerError(req, res);
+    }
 });
-
 
 var server = app.listen(8080, function () {
 
-    var host = server.address().address
-    var port = server.address().port
- 
-    console.log("Example app listening at http://%s:%s", host, port)
- })
+    var host = server.address().address;
+    var port = server.address().port;
+    console.log("Example app listening at http://%s:%s", host, port);
+ });
+
+
+function handleServerError(req, res)
+{
+
+    res.writeHead(500,{"content-type":"text/plain"});
+    res.write("Internal Server Error");
+
+    res.end();
+}

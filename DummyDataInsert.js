@@ -74,24 +74,29 @@ var initials = {
         var bulk = [];
         for(var featureID = 1; featureID <= 6; featureID++)
         {
-            for(var suiteID = 1; suiteID <= 30; suiteID++)
+            for(var suiteID = 1; suiteID <= 10; suiteID++)
             {
-                for(var testcaseID = 1; testcaseID <= 30; testcaseID++)
+                for(var testcaseID = 1; testcaseID <= 10; testcaseID++)
                 {
                     var obj = getDummyObject();
                     obj['sessionId'] = obj['sessionId']+sessionIDIndex;
                     obj['featureName'] = obj['featureName']+featureID;
                     obj['suiteName'] = obj['suiteName']+suiteID;
-                    obj['testCaseId'] = obj['testCaseId']+testcaseID;
+                    obj['testCaseId'] = "F"+featureID+"-S"+suiteID+"-"+obj['testCaseId']+testcaseID;
                     obj['testName'] = obj['featureName']+"-"+obj['suiteName'] +"-"+obj['testCaseId'];
 
                     var rndm = Math.floor( (Math.random()*3 ) + 1 );
                     obj['testStatus'] = testcaseStatus[rndm - 1];
 
                     var sessionStartTime = buildStartTime + (60*60*1000)*sessionStartTimeIndex;
-                    var sessionEndTime = sessionStartTime + (10*60*1000);
+                    var sessionEndTime = sessionStartTime + (15*60*1000);
                     obj['sessionStartTime'] = sessionStartTime;
                     obj['sessionEndTime'] = sessionEndTime;
+
+                    var testCaseStartTime = sessionStartTime + Math.floor( (Math.random()*3 ) + 1 ) * 3600*1000;
+                    var testCaseEndTime = testCaseStartTime + Math.floor( (Math.random()*11 ) + 1 ) * 3600*1000;
+                    obj['testCaseStartTime'] = testCaseStartTime;
+                    obj['testCaseEndTime'] = testCaseEndTime;
 
                     bulk.push(obj);
                     
@@ -101,7 +106,7 @@ var initials = {
         }
         collection.insert(bulk,{w:1, keepGoing:true}, function(err, count){
 
-                        if(sessionIDIndex > 5) {
+                        if(sessionIDIndex > 50) {
                             client.close();
                         }else {
                             populateMongoDBCollection(collection, client, sessionIDIndex+1, sessionStartTimeIndex+2, buildStartTime);

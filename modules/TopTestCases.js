@@ -29,9 +29,9 @@ function getTopTestcases(request, response, top, executionResult) {
             }
 
             results.sort(compareDESC);
-            var topResultNumber = (top <= results.length? top : results.length);
+            var topResultNumber = (top < results.length? top : results.length);
             var accu = [];
-            populateTestCaseName(collection, results, 0, top, accu, response, client);
+            populateTestCaseName(collection, results, 0, topResultNumber, accu, response, client);
             
         });
     });
