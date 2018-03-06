@@ -28,6 +28,7 @@ app.get('/ExecutionInfo*', function (req, res) {
     }
 });
 
+
 app.get('/topFeatures', function (req, res) {
     
     var number = req.query.number;
@@ -50,7 +51,11 @@ app.get('/topFeatures', function (req, res) {
 * maximum time taking tast cases will be returned.
 * If user provides this argument but value is illegal or unacceptable, then it will send top minimum 
 * time taking test cases.
-
+*
+* lastSession: Accepted values <true | false> This attribute works along with executionTime. If this is true then
+* then top test cases will be choosen from last executed session.
+*
+*
 * executionResult : String [Accepted values < Pass | Fail | Skip> . Default: Pass] - Return the top
 * test cases which has maximum number of result specified by user. For an example, if user specifies "Fail"
 * as value of this parameter, then it will return top test cases which has maximum number of fail count.
@@ -59,17 +64,19 @@ app.get('/topTestCases', function (req, res) {
     
     var number = req.query.number;
     var executionTimeSortOrder = req.query.executionTime;
+    var lastSession = req.query.lastSession;
+    
     var executionResult = req.query.executionResult;
     try{
         if(executionTimeSortOrder)
         {
-            
-            new topRunningTimeTestCases.topTestsRunningTime(req, res, number,executionTimeSortOrder);
+            new topRunningTimeTestCases.topTestsRunningTime(req, res, number,executionTimeSortOrder, lastSession);
             
         }else {
             topTestcases.getTopTestcases(req, res, number, executionResult);
         }
-    } catch(e){
+    } catch(err){
+        
         handleServerError(req, res);
     }
 });

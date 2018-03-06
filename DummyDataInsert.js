@@ -54,6 +54,7 @@ var initials = {
     };
 
     var testcaseStatus = ["Pass", "Fail", "Skip"];
+    var testRunType = ["automated", "manual", "automated", "manual"];
 
 
     function getDummyObject()
@@ -97,6 +98,8 @@ var initials = {
                     var testCaseEndTime = testCaseStartTime + Math.floor( (Math.random()*11 ) + 1 ) * 3600*1000;
                     obj['testCaseStartTime'] = testCaseStartTime;
                     obj['testCaseEndTime'] = testCaseEndTime;
+
+                    obj['testruntype'] = testRunType[Math.floor(Math.random()*4 +1)-1];
 
                     bulk.push(obj);
                     

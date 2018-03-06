@@ -15,12 +15,23 @@ function executionReport(request, response)
         var db = client.db(config.mongoDBName);
         var collection = db.collection(config.mongoCollectionName);
 
-        collection.find().sort({sessionEndTime: -1}).limit(1);
         var options = { "sort": [['sessionEndTime',-1]] };
         collection.findOne({}, options , function(err, doc) {
             var lastSessionEndTime = doc.sessionEndTime;
-            totalTestCaseFind(lastSessionEndTime);
+            executionTimeOfSession(lastSessionEndTime);
         }); 
+
+        var executionTimeOfSession = function(lastSessionEndTime){
+            collection.findOne({"sessionEndTime":lastSessionEndTime},{fields:{"sessionStartTime":1}}, function(err, document){
+                if(err == null)
+                {
+                    resultObj["Session Duration in sec"] =(lastSessionEndTime - document['sessionStartTime'])/1000;
+                }else{
+                    resultObj["Session Duration in sec"] = 0;
+                }
+                totalTestCaseFind(lastSessionEndTime);
+            });
+        } 
         
         var totalTestCaseFind = function(lastSessionEndTime){
             collection.count({"sessionEndTime":lastSessionEndTime},function(err, count){
@@ -71,11 +82,35 @@ function executionReport(request, response)
                 }else {
                     resultObj["Total Skipped"]= 0;
                 }
-                totalSuiteFound();
+                totalManualFound(lastSessionEndTime);
             });
             
         };
-        
+
+        var totalManualFound = function(lastSessionEndTime) {
+            collection.count({"sessionEndTime":lastSessionEndTime,"testruntype":"manual"}, function(err, count){
+                if(err == null)
+                {
+                    resultObj["Total Manual Run"]= count;
+                }else {
+                    resultObj["Total Manual Run"]= 0;
+                }
+                totalAutomatedFound(lastSessionEndTime);
+            });
+        };
+
+        var totalAutomatedFound = function(lastSessionEndTime) {
+            collection.count({"sessionEndTime":lastSessionEndTime,"testruntype":"automated"}, function(err, count){
+                if(err == null)
+                {
+                    resultObj["Total Automated Run"]= count;
+                }else {
+                    resultObj["Total Automated Run"]= 0;
+                }
+                totalSuiteFound();
+            });
+        };
+
         var totalSuiteFound = function() {
             collection.distinct("featureName", function(err, docs){
                 if(docs != null)
