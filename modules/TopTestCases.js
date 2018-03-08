@@ -56,6 +56,7 @@ function populateTestCaseName(collection, results, index, max, accu, response,cl
     collection.findOne({"testCaseId": results[index]["testCaseId"]},{fields:{"testName":1}}, function(err, document){
         
         accu[index]["TestCasesName"] = document["testName"];
+        accu[index]["TestCasesId"] = results[index]["testCaseId"];
         populatePassData(collection,results, index, max, accu, response, client);
     });
 }
