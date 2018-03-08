@@ -3,6 +3,7 @@ var executionReport = require("./modules/ExecutionReport");
 var topFeatures = require("./modules/TopFeatures");
 var topTestcases = require("./modules/TopTestCases");
 var topRunningTimeTestCases = require("./modules/TopRunningTime");
+var buildDetailInfo = require("./modules/BuildDetailsInfo");
 
 var express = require('express');
 var app = express();
@@ -79,6 +80,11 @@ app.get('/topTestCases', function (req, res) {
         
         handleServerError(req, res);
     }
+});
+
+app.get('/latestBuildsInfo', function(req, resp){
+    var number = req.query.number;
+    new buildDetailInfo.BuildDetailsInfo(req, resp, number).getLatestBuildsInfo();
 });
 
 var server = app.listen(8080, function () {
