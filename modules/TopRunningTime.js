@@ -110,7 +110,7 @@ function getTopTestsRunningTime(request, response, top, executionTimeSortOrder, 
                                 totalRunningTime += (docs[i].testCaseEndTime - docs[i].testCaseStartTime);
                             }
                             var averageRunningTime = totalRunningTime / docs.length;
-                            self.resultArray.push({"Test case Id":testCaseId, "Test case name":docs[0].testName, "AverageRunTime":Math.floor(averageRunningTime)});
+                            self.resultArray.push({"TestCasesId":testCaseId, "TestCasesName":docs[0].testName, "AverageRunTime":Math.floor(averageRunningTime)});
                            
                             self.responseHandler();
                         } );
