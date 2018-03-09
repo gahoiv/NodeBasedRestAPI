@@ -92,11 +92,11 @@ function getTopTestsRunningTime(request, response, top, executionTimeSortOrder, 
         {
             conditions = {"testCaseId": testCaseId, "sessionEndTime": lastSessionEndTime};
         }else {
-            conditions = {"testCaseId": testCaseId};
+            conditions = {"testCaseId": testCaseId, };
         }
     
         collection.find( conditions,
-                    {fields:{"testName":1, "testCaseStartTime":1, "testCaseEndTime":1}})
+                    {fields:{"testName":1, "testCaseStartTime":1, "testCaseEndTime":1, "testStatus":1, "sessionId":1, "subSessionId":1}})
                     .toArray(
                         function(err, docs){
                             if(err != null)
@@ -109,9 +109,9 @@ function getTopTestsRunningTime(request, response, top, executionTimeSortOrder, 
                             {
                                 totalRunningTime += (docs[i].testCaseEndTime - docs[i].testCaseStartTime);
                             }
-                            var averageRunningTime = totalRunningTime / docs.length;
-                            self.resultArray.push({"TestCasesId":testCaseId, "TestCasesName":docs[0].testName, "AverageRunTime":Math.floor(averageRunningTime)});
                            
+                            var averageRunningTime = totalRunningTime / docs.length;
+                            self.resultArray.push({"TestCasesId":testCaseId, "TestCasesName":docs[0].testName, "Status": docs[0].testStatus, "SessionId":docs[0].sessionId, "SubSessionId":docs[0].subSessionId, "AverageRunTime":Math.floor(averageRunningTime)});
                             self.responseHandler();
                         } );
     }
